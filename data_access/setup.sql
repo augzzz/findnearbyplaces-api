@@ -38,25 +38,23 @@ create table findnearbyplaces.review
 	customer_id int references findnearbyplaces.customer(id),
 	id serial not null unique,
 	text varchar(256) not null,
-	rating bit[1] not null
+	rating int not null
 );
 
 create table findnearbyplaces.photo 
 (
 	id serial primary key,
-	file bytea not null
+	file varchar(100) not null
 );
 
 create table findnearbyplaces.place_photo
 (
-	location_id int8 references findnearbyplaces.review(location_id),
-	photo_id int not null
+	location_id int8 references findnearbyplaces.place(id),
+	photo_id int references findnearbyplaces.photo(id)
 );
 
 create table findnearbyplaces.review_photo
 (
 	review_id int references findnearbyplaces.review(id),
-	photo_id int not null
+	photo_id int references findnearbyplaces.photo(id)
 );
-
-
