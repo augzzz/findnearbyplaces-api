@@ -1,19 +1,25 @@
 const express = require('express');
 const cors = require('cors');
-
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 var session = require('express-session');
 var SQLiteStore = require('connect-sqlite3')(session);
-
 const { store } = require('./data_access/store');
 
 const application = express();
 const port = process.env.PORT || 4002;
 
+// LOCAL USE //
+let backendURL = 'http://localhost:4002';
+let frontEndURL = 'http://localhost:3000';
+
 // ------------------------------------------------// MIDDLEWARE //----------------------------------------------------- //
+application.use(cors({
+    origin: frontEndURL,
+    credentials: true
+}));
+
 application.use(express.json());
-application.use(cors());
 
 application.use((request, response, next) => {
     console.log(`request url: ${request.url}`);
@@ -56,7 +62,6 @@ passport.serializeUser(function (user, cb) {
         cb(null, { id: user.id, username: user.username });
     });
 });
-
 passport.deserializeUser(function (user, cb) {
     process.nextTick(function () {
         return cb(null, user);
@@ -75,13 +80,12 @@ application.get('/', (request, response) => {
 // SEARCH //
 application.get('/search', (request, response) => {
     let search_term = request.body.search_term;
-    let user_location = request.body.user_location;
     let radius_filter = request.body.radius_filter;
     let maximum_results_to_return = request.body.maximum_results_to_return;
     let category_filter = request.body.category_filter;
     let sort = request.body.sort;
 
-    store.getSearchResult(search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort)
+    store.getSearchResult(search_term, radius_filter, maximum_results_to_return, category_filter, sort)
         .then(x => response.status(200).json({ done: true, message: 'Customer added successfully.' }))
         .catch(error => {
             console.log(error);
@@ -92,6 +96,7 @@ application.get('/search', (request, response) => {
 
 // CUSTOMER //
 application.post('/customer', (request, response) => {
+    console.log(request.body); // UNDEFINED
     let email = request.body.email;
     let password = request.body.password;
 
@@ -115,6 +120,11 @@ application.get('/login/succeeded', (request, response) => {
 
 application.get('/login/failed', (request, response) => {
     response.status(401).json({ done: false, message: 'Invalid customer credentials.' });
+});
+
+application.post('/logout', (request, response) => {
+    request.logout();
+    response.json({ done: true, message: 'Customer signed out successfully.' })
 });
 
 // CATEGORY //
@@ -277,14 +287,6 @@ application.delete('/review', (request, response) => {
         });
 });
 //
-
-
-
-
-
-
-
-
 
 // LISTENER //
 application.listen(port, () => {

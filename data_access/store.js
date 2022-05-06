@@ -3,7 +3,7 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 const connectionString =
-    `postgres://${process.env.USER}:${process.env.PASSWORD}@${process.env.HOST}:${process.env.DATABASEPORT}/${process.env.DATABASE}`
+    `postgres://${process.env.DBUSER}:${process.env.DBPASSWORD}@${process.env.HOST}:${process.env.DATABASEPORT}/${process.env.DATABASE}`
 
 const connection = {
     connectionString: process.env.DATABASE_URL ? process.env.DATABASE_URL : connectionString,
@@ -12,15 +12,27 @@ const connection = {
 
 const pool = new Pool(connection);
 
+let userLocation = (lat1, long1, lat2, long2) => {
+    let y = lat2 - lat1;
+    let x = long2 - long1;
 
-
+    return Math.sqrt(x * x + y * y);
+};
 
 let store = {
-
-    // ??????????????????? I am not sure how to complete this... this function is 10x more complex than all the others combined!!! //
-    getSearchResults: (search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort) => {
-        //return pool.query(`SELECT `)
+    /* Did not finish/
+    getSearchResults: (search_term, radius_filter, maximum_results_to_return, category_filter, sort) => {
+        return pool.query(`SELECT * FROM findnearbyplaces.places INNER JOIN findnearbyplaces.category ON findnearbyplaces.category.id = findnearbyplaces.places.category_id 
+        WHERE findnearbyplaces.places.name LIKE '%($1)% OR findnearbyplaces.category.name like '%($1)%'`, [search_term])
+            .then(x => {
+                if (x.rows.length > 0) {
+                    for(let i = 0; i< x.rows.length; i++) {
+                        if (userLocation )
+                    }
+                }
+            })
     },
+    */
 
     addCustomer: (email, password) => {
         const hash = bcrypt.hashSync(password, 10);
